@@ -31,6 +31,20 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Database connection middleware for serverless
+let isConnected = false;
+app.use(async (req, res, next) => {
+  if (!isConnected) {
+    try {
+      await connectDB();
+      isConnected = true;
+    } catch (error) {
+      console.error('Database connection failed:', error);
+    }
+  }
+  next();
+});
+
 app.get('/', (req, res) => {
   res.status(200).json({
     message: 'API is running',
@@ -65,9 +79,6 @@ app.use((err, req, res, next) => {
     }
   });
 });
-
-// Connect to database
-connectDB();
 
 // Start server only if not in Vercel serverless environment
 if (process.env.VERCEL !== '1') {

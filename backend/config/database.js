@@ -12,7 +12,7 @@ const connectDB = async () => {
     });
 
     console.log(`✅ MongoDB Atlas Connected: ${conn.connection.host}`);
-    
+
     // Connection event listeners
     mongoose.connection.on('connected', () => {
       console.log('📊 Mongoose connected to MongoDB Atlas');
@@ -35,7 +35,12 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error(`❌ Error connecting to MongoDB: ${error.message}`);
-    process.exit(1);
+    // Don't exit process in Vercel serverless environment
+    if (process.env.VERCEL !== '1') {
+      process.exit(1);
+    } else {
+      throw error; // Let Vercel handle the error
+    }
   }
 };
 

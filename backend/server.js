@@ -66,8 +66,15 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Connect to database
 connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server only if not in Vercel serverless environment
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;

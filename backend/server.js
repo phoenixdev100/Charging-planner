@@ -43,12 +43,12 @@ app.get('/health', (req, res) => {
 });
 
 // Database connection middleware for serverless
-const connectDB = require('./config/database');
 let isConnected = false;
 
 app.use(async (req, res, next) => {
   if (!isConnected && process.env.MONGODB_URI) {
     try {
+      const connectDB = require('./config/database');
       await connectDB();
       isConnected = true;
     } catch (error) {
@@ -62,22 +62,41 @@ app.use(async (req, res, next) => {
 // Static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Import and use routes
-const chargerRoutes = require('./routes/chargerRoutes');
-const costRoutes = require('./routes/costRoutes');
-const planningRoutes = require('./routes/planningRoutes');
-const vehicleRoutes = require('./routes/vehicleRoutes');
-const authRoutes = require('./routes/authRoutes');
-const reportRoutes = require('./routes/reportRoutes');
-const visualizationRoutes = require('./routes/visualizationRoutes');
+// Lazy load routes to prevent initialization errors
+app.use('/api/chargers', (req, res, next) => {
+  const chargerRoutes = require('./routes/chargerRoutes');
+  chargerRoutes(req, res, next);
+});
 
-app.use('/api/chargers', chargerRoutes);
-app.use('/api/cost', costRoutes);
-app.use('/api/planning', planningRoutes);
-app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/visualization', visualizationRoutes);
+app.use('/api/cost', (req, res, next) => {
+  const costRoutes = require('./routes/costRoutes');
+  costRoutes(req, res, next);
+});
+
+app.use('/api/planning', (req, res, next) => {
+  const planningRoutes = require('./routes/planningRoutes');
+  planningRoutes(req, res, next);
+});
+
+app.use('/api/vehicles', (req, res, next) => {
+  const vehicleRoutes = require('./routes/vehicleRoutes');
+  vehicleRoutes(req, res, next);
+});
+
+app.use('/api/auth', (req, res, next) => {
+  const authRoutes = require('./routes/authRoutes');
+  authRoutes(req, res, next);
+});
+
+app.use('/api/reports', (req, res, next) => {
+  const reportRoutes = require('./routes/reportRoutes');
+  reportRoutes(req, res, next);
+});
+
+app.use('/api/visualization', (req, res, next) => {
+  const visualizationRoutes = require('./routes/visualizationRoutes');
+  visualizationRoutes(req, res, next);
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
